@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>مكتبة القادسية الثانوية للبنات</title>
+
+<style>
+body {
+    font-family: 'Arial';
+    direction: rtl;
+    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+    margin: 0;
+    color: white;
+}
+
+header {
+    text-align: center;
+    padding: 20px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+#search {
+    display: block;
+    margin: 20px auto;
+    padding: 15px;
+    width: 95%;
+    font-size: 16px;
+    border-radius: 12px;
+    border: none;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.book {
+    background: white;
+    color: black;
+    border-radius: 15px;
+    width: 260px;
+    margin: 15px;
+    padding: 10px;
+    text-align: center;
+}
+
+.book img {
+    width: 100%;
+    height: 180px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #f0f0f0;
+    display: block;
+}
+
+.book:hover {
+    transform: scale(1.05);
+}
+
+button {
+    background: #2c5364;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+button:disabled {
+    background: #888;
+    cursor: not-allowed;
+}
+
+input {
+    width: 90%;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+.status {
+    margin-top: 8px;
+    font-weight: bold;
+}
+
+.status.reserved {
+    color: red;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  📚 مكتبة القادسية الثانوية للبنات
+  <div style="font-size:18px; color:#FFD700; margin-top:5px;">
+    اقرأ، فكل كتاب يفتح لك نافذة لعالم جديد ✨
+  </div>
+</header>
+<input type="text" id="search" placeholder="🔍 ابحث عن كتاب..." onkeyup="searchBooks()">
+
+<div class="container" id="books"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyALHgeS2Po83eZOzN0fnnh-SMaakxhTVE0",
+    authDomain: "school-library-8db86.firebaseapp.com",
+    databaseURL: "https://school-library-8db86-default-rtdb.firebaseio.com",
+    projectId: "school-library-8db86",
+    storageBucket: "school-library-8db86.appspot.com",
+    messagingSenderId: "294119419191",
+    appId: "1:294119419191:web:830aee42823f8d1540feb2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const books = [
+{title:"ثقافة المسلم", author:"موسى", code:"211", desc:"بين الأصالة والتحديات", img:"https://i0.wp.com/daralmanahej.com/wp-content/uploads/2022/03/%D8%A7%D9%84%D8%AB%D9%82%D8%A7%D9%81%D8%A9-%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9-%D8%AB%D9%82%D8%A7%D9%81%D8%A9-%D8%A7%D9%84%D9%85%D8%B3%D9%84%D9%85.jpg?fit=300%2C300&ssl=1"},
+{title:"جود في مهب الريح", author:"محمد الرجبي", code:"17221", desc:"رواية أدبية", img:"https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1539954489i/42392334.jpg"},
+{title:"واحدة تكفى", author:"راشد عيسى", code:"1187", desc:"نصوص أدبية", img:"https://media.akhbar-alkhaleej.com/source/16424/images/Local-11-03-2023-53.jpg"},
+{title:"إن بي رغبة بالبكاء", author:"أحمد العواضي", code:"80801", desc:"خواطر إنسانية", img:"https://gabpd.gov.ye/wp-content/uploads/2024/07/Ahmed-Al-Awadi-2-jpg.webp"},
+{title:"تحفيز الآخرين", author:"سامي سلمان", code:"1279", desc:"تطوير الذات", img:"https://www.alarabimag.com/images/thumbs/26298.jpg"},
+{title:"وتستيقظ القبور", author:"خالد الساكت", code:"1101", desc:"رواية غامضة", img:"https://www.ammonnews.net/img/big/2013615039RN167.jpeg?xxlarge"},
+{title:"العاديات في عصر الخلويات", author:"سالم السعودي", code:"-", desc:"دورية ثقافية", img:"https://alkutba.gov.jo/sites/default/files/2023-05/T201403.jpg"},
+{title:"أسرة آمنة", author:"حمد الخوالدة", code:"1264", desc:"توعية أسرية", img:"https://www.mawteni48.com/wp-content/uploads/2021/11/%D9%86%D8%B8%D8%A7%D9%85_%D8%A7%D9%84%D8%A7%D8%B3%D8%B1%D8%A9_%D9%81%D9%8A_%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85.jpg"},
+{title:"ظل غيمة", author:"حكمت النوايسة", code:"813", desc:"رواية أدبية", img:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShGIQ9cqYIye9twAY7ePBh1pinEERgIdrDAw&s"},
+{title:"أهل الخطوة", author:"رفقة دودين", code:"-", desc:"حديث نبوي", img:"https://alkutba.gov.jo/sites/default/files/2023-08/f201308.jpg"},
+{title:"فدوى طوقان", author:"هيام رمزي", code:"81", desc:"سيرة شاعرة", img:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeOpnFNF30Jb5TVFd3pBZHs9j0KdxnqaVhCg&s"},
+{title:"دليل مهارات الحياة", author:"نيللي شحود", code:"4086", desc:"تنمية مهارات", img:"https://www.new-educ.com/wp-content/uploads/2022/05/learn-life-skills.jpg"},
+{title:"الحياة البرلمانية", author:"عامر الفايز", code:"4118", desc:"سياسة أردنية", img:"https://alhayatnews.net/wp-content/uploads/2025/02/IMG_2533.jpeg"},
+{title:"موسوعة الكمبيوتر", author:"عبد الفتاح مراد", code:"3318", desc:"أسئلة تقنية", img:"https://books-library.website/files/books-library.online-01131523Og1I3.jpg"},
+{title:"في علم الحديث", author:"نور الدين عتر", code:"2592", desc:"علوم دينية", img:"https://kitabialhadif.com/storage/file/22/%D9%83%D8%AA%D8%A8%20%D8%AF%D8%A7%D8%B1%20%D8%A7%D9%84%D8%BA%D9%88%D8%AB%D8%A7%D9%86%D9%8A/%D8%A7%D9%84%D8%B9%D9%84%D8%A7%D9%85%D8%A9%20%D8%A7%D9%84%D9%85%D8%AD%D8%AF%D8%AB%20%D8%A7%D9%84%D8%A3%D8%B3%D8%AA%D8%A7%D8%B0%20%D8%A7%D9%84%D8%AF%D9%83%D8%AA%D9%88%D8%B1%20%D9%86%D9%88%D8%B1%20%D8%A7%D9%84%D8%AF%D9%8A%D9%86%20%D8%B9%D8%AA%D8%B1%20%D9%88%D8%AC%D9%87%D9%88%D8%AF%D9%87%20%D9%81%D9%8A%20%D8%B9%D9%84%D9%88%D9%85%20%D8%A7%D9%84%D8%AD%D8%AF%D9%8A%D8%AB/images/P420X5zOh24IXs3GOKhEbourUa3QRNH9sHVNYEUr.jpg"},
+{title:"نساء حول الرسول", author:"مصطفى الشلبي", code:"2824", desc:"سيرة صحابيات", img:"https://www.noor-book.com/publice/covers_cache_webp/13/b/d/b/b401393b22bdbceb82bb4624238d1a4e.png.webp"},
+{title:"One Thousand Nights", author:"-", code:"2674", desc:"قصص عالمية", img:"https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1436162131i/21524446.jpg"},
+{title:"عشيات وادي اليابس", author:"مصطفى التل", code:"2108", desc:"أدب أردني", img:"https://www.addustour.com/file.php?fileid=622186&width=800&height=450"},
+{title:"الإخوات المؤمنات", author:"منير الغضبان", code:"21715", desc:"ديني", img:"https://www.islamist-movements.com/upload/photo/news/2/8/500x500o/695.jpg"},
+{title:"قوة الشخصية", author:"محمد قطناني", code:"4222", desc:"تطوير الذات", img:"https://upload.wikimedia.org/wikipedia/commons/e/e4/Imam-qatanani.jpg"},
+{title:"ليتنا لم نكن", author:"سوسن حداد", code:"4112", desc:"رواية", img:"https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1448169583i/27874914.jpg"},
+{title:"التميمة السوداء", author:"حسام الرشيد", code:"3739", desc:"رواية غموض", img:"https://alkutba.gov.jo/sites/default/files/2020-07/Pages%20from%20Book1149.jpg"},
+{title:"جليلة اليافاوية", author:"يوسف غزال", code:"3748", desc:"رواية تاريخية", img:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8L4Q3Z8KlP7Amf8wrt8i0gJCYrvkV-4_8Og&s"}
+];
+
+function displayBooks(list){
+    const container = document.getElementById("books");
+    container.innerHTML = "";
+
+    list.forEach((book,index)=>{
+      container.innerHTML += `
+        <div class="book" id="book-${index}">
+            <img src="${book.img}?random=${index}">
+            <h3>${book.title}</h3>
+            <p>المؤلف: ${book.author}</p>
+            <p>${book.desc}</p>
+            <p>رقم: ${book.code}</p>
+            <input placeholder="الاسم الثلاثي + الصف">
+            <button onclick="reserve(${index})">حجز</button>
+            <button onclick="cancel(${index})">إلغاء الحجز</button>
+            <div class="status">الحالة: متاح</div>
+        </div>
+      `;
+
+      const bookRef = ref(db,"books/"+index);
+      onValue(bookRef,(snapshot)=>{
+        const data = snapshot.val();
+        if(data){
+          const box = document.getElementById("book-"+index);
+          box.querySelector(".status").innerText = "محجوز باسم: "+data.name;
+          box.querySelector(".status").classList.add("reserved");
+          box.querySelector("input").value = data.name;
+          box.querySelector("input").disabled = true;
+          box.querySelector("button:first-of-type").disabled = true;
+        }
+      });
+    });
+}
+
+window.reserve = function(index){
+    const box = document.getElementById("book-"+index);
+    const name = box.querySelector("input").value;
+    const status = box.querySelector(".status");
+    if(name===""){ alert("اكتبي الاسم والصف!"); return; }
+    set(ref(db,"books/"+index), {name:name});
+    status.innerText = "محجوز باسم: " + name;
+    status.classList.add("reserved");
+    box.querySelector("input").disabled = true;
+    box.querySelector("button:first-of-type").disabled = true;
+}
+
+window.cancel = function(index){
+    const box = document.getElementById("book-"+index);
+    const status = box.querySelector(".status");
+    const btnReserve = box.querySelector("button:first-of-type");
+    const input = box.querySelector("input");
+    set(ref(db,"books/"+index), null);
+    status.innerText = "الحالة: متاح";
+    status.classList.remove("reserved");
+    input.disabled = false;
+    input.value = "";
+    btnReserve.disabled = false;
+}
+
+window.searchBooks = function(){
+    const value = document.getElementById("search").value.toLowerCase();
+    const filtered = books.filter(b=>b.title.toLowerCase().includes(value));
+    displayBooks(filtered);
+}
+
+displayBooks(books);
+</script>
+
+</body>
+</html>
