@@ -12,14 +12,12 @@ body {
     margin: 0;
     color: white;
 }
-
 header {
     text-align: center;
     padding: 20px;
     font-size: 28px;
     font-weight: bold;
 }
-
 #search {
     display: block;
     margin: 20px auto;
@@ -29,13 +27,11 @@ header {
     border-radius: 12px;
     border: none;
 }
-
 .container {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
 }
-
 .book {
     background: white;
     color: black;
@@ -45,20 +41,13 @@ header {
     padding: 10px;
     text-align: center;
 }
-
 .book img {
     width: 100%;
     height: 180px;
     object-fit: contain;
     border-radius: 10px;
     background: #f0f0f0;
-    display: block;
 }
-
-.book:hover {
-    transform: scale(1.05);
-}
-
 button {
     background: #2c5364;
     color: white;
@@ -68,54 +57,50 @@ button {
     cursor: pointer;
     margin-top: 5px;
 }
-
 button:disabled {
     background: #888;
-    cursor: not-allowed;
 }
-
 input {
     width: 90%;
     padding: 5px;
     margin-top: 5px;
 }
-
 .status {
     margin-top: 8px;
     font-weight: bold;
 }
-
 .status.reserved {
     color: red;
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <header>
-  📚 مكتبة القادسية الثانوية للبنات
-  <div style="font-size:18px; color:#FFD700; margin-top:5px;">
-    اقرأ، فكل كتاب يفتح لك نافذة لعالم جديد ✨
-  </div>
+📚 مكتبة القادسية الثانوية للبنات
+<div style="font-size:18px; color:#FFD700; margin-top:5px;">
+اقرأ، فكل كتاب يفتح لك نافذة لعالم جديد ✨
+</div>
 </header>
+
 <input type="text" id="search" placeholder="🔍 ابحث عن كتاب..." onkeyup="searchBooks()">
 
 <div class="container" id="books"></div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
-// Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyALHgeS2Po83eZOzN0fnnh-SMaakxhTVE0",
-    authDomain: "school-library-8db86.firebaseapp.com",
-    databaseURL: "https://school-library-8db86-default-rtdb.firebaseio.com",
-    projectId: "school-library-8db86",
-    storageBucket: "school-library-8db86.appspot.com",
-    messagingSenderId: "294119419191",
-    appId: "1:294119419191:web:830aee42823f8d1540feb2"
+apiKey: "AIzaSyALHgeS2Po83eZOzN0fnnh-SMaakxhTVE0",
+authDomain: "school-library-8db86.firebaseapp.com",
+databaseURL: "https://school-library-8db86-default-rtdb.firebaseio.com",
+projectId: "school-library-8db86",
+storageBucket: "school-library-8db86.appspot.com",
+messagingSenderId: "294119419191",
+appId: "1:294119419191:web:830aee42823f8d1540feb2"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -147,64 +132,89 @@ const books = [
 {title:"جليلة اليافاوية", author:"يوسف غزال", code:"3748", desc:"رواية تاريخية", img:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8L4Q3Z8KlP7Amf8wrt8i0gJCYrvkV-4_8Og&s"}
 ];
 
+function todayDate(){
+    const t = new Date();
+    return t.toISOString().split("T")[0];
+}
+
 function displayBooks(list){
     const container = document.getElementById("books");
     container.innerHTML = "";
 
     list.forEach((book,index)=>{
-      container.innerHTML += `
+
+        container.innerHTML += `
         <div class="book" id="book-${index}">
-            <img src="${book.img}?random=${index}">
+            <img src="${book.img}">
             <h3>${book.title}</h3>
             <p>المؤلف: ${book.author}</p>
             <p>${book.desc}</p>
             <p>رقم: ${book.code}</p>
+
             <input placeholder="الاسم الثلاثي + الصف">
+
+            <input type="date" min="${todayDate()}" value="${todayDate()}">
+
             <button onclick="reserve(${index})">حجز</button>
             <button onclick="cancel(${index})">إلغاء الحجز</button>
+
             <div class="status">الحالة: متاح</div>
         </div>
-      `;
+        `;
 
-      const bookRef = ref(db,"books/"+index);
-      onValue(bookRef,(snapshot)=>{
-        const data = snapshot.val();
-        if(data){
-          const box = document.getElementById("book-"+index);
-          box.querySelector(".status").innerText = "محجوز باسم: "+data.name;
-          box.querySelector(".status").classList.add("reserved");
-          box.querySelector("input").value = data.name;
-          box.querySelector("input").disabled = true;
-          box.querySelector("button:first-of-type").disabled = true;
-        }
-      });
+        const bookRef = ref(db,"books/"+index);
+
+        onValue(bookRef,(snapshot)=>{
+            const data = snapshot.val();
+            if(data){
+                const box = document.getElementById("book-"+index);
+                box.querySelector(".status").innerText =
+                "محجوز باسم: " + data.name + " | تاريخ الارجاع: " + data.date;
+
+                box.querySelector(".status").classList.add("reserved");
+                box.querySelector("input").value = data.name;
+                box.querySelector("input").disabled = true;
+                box.querySelectorAll("input")[1].disabled = true;
+                box.querySelector("button:first-of-type").disabled = true;
+            }
+        });
+
     });
 }
 
 window.reserve = function(index){
+
     const box = document.getElementById("book-"+index);
     const name = box.querySelector("input").value;
-    const status = box.querySelector(".status");
-    if(name===""){ alert("اكتبي الاسم والصف!"); return; }
-    set(ref(db,"books/"+index), {name:name});
-    status.innerText = "محجوز باسم: " + name;
-    status.classList.add("reserved");
-    box.querySelector("input").disabled = true;
-    box.querySelector("button:first-of-type").disabled = true;
-}
+    const date = box.querySelectorAll("input")[1].value;
+
+    if(name===""){
+        alert("اكتبي الاسم والصف!");
+        return;
+    }
+
+    set(ref(db,"books/"+index), {
+        name:name,
+        date:date
+    });
+
+};
 
 window.cancel = function(index){
+
     const box = document.getElementById("book-"+index);
-    const status = box.querySelector(".status");
-    const btnReserve = box.querySelector("button:first-of-type");
-    const input = box.querySelector("input");
+
     set(ref(db,"books/"+index), null);
-    status.innerText = "الحالة: متاح";
-    status.classList.remove("reserved");
-    input.disabled = false;
-    input.value = "";
-    btnReserve.disabled = false;
-}
+
+    box.querySelector(".status").innerText = "الحالة: متاح";
+    box.querySelector(".status").classList.remove("reserved");
+
+    box.querySelector("input").disabled = false;
+    box.querySelectorAll("input")[1].disabled = false;
+
+    box.querySelector("input").value = "";
+    box.querySelector("button:first-of-type").disabled = false;
+};
 
 window.searchBooks = function(){
     const value = document.getElementById("search").value.toLowerCase();
@@ -213,6 +223,7 @@ window.searchBooks = function(){
 }
 
 displayBooks(books);
+
 </script>
 
 </body>
