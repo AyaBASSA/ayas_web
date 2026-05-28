@@ -188,8 +188,15 @@ window.reserve = function(index){
     const name = box.querySelector("input").value;
     const date = box.querySelectorAll("input")[1].value;
 
+    const today = todayDate();
+
     if(name===""){
         alert("اكتبي الاسم والصف!");
+        return;
+    }
+
+    if(date < today){
+        alert("❌ لا يمكن اختيار تاريخ قديم!");
         return;
     }
 
