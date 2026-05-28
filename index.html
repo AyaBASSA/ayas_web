@@ -12,12 +12,14 @@ body {
     margin: 0;
     color: white;
 }
+
 header {
     text-align: center;
     padding: 20px;
     font-size: 28px;
     font-weight: bold;
 }
+
 #search {
     display: block;
     margin: 20px auto;
@@ -27,11 +29,13 @@ header {
     border-radius: 12px;
     border: none;
 }
+
 .container {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
 }
+
 .book {
     background: white;
     color: black;
@@ -41,6 +45,7 @@ header {
     padding: 10px;
     text-align: center;
 }
+
 .book img {
     width: 100%;
     height: 180px;
@@ -48,6 +53,7 @@ header {
     border-radius: 10px;
     background: #f0f0f0;
 }
+
 button {
     background: #2c5364;
     color: white;
@@ -57,20 +63,60 @@ button {
     cursor: pointer;
     margin-top: 5px;
 }
+
 button:disabled {
     background: #888;
 }
+
 input {
     width: 90%;
     padding: 5px;
     margin-top: 5px;
 }
+
 .status {
     margin-top: 8px;
     font-weight: bold;
 }
+
 .status.reserved {
     color: red;
+}
+
+/* ⭐ التعديل الجديد (شكل التاريخ) */
+.date-box {
+    margin-top: 8px;
+    text-align: right;
+}
+
+.date-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #2c5364;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.date-input {
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    padding: 5px;
+    border-radius: 8px;
+    gap: 5px;
+}
+
+.date-input span {
+    font-size: 16px;
+}
+
+.date-input input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
 }
 </style>
 
@@ -132,6 +178,7 @@ const books = [
 {title:"جليلة اليافاوية", author:"يوسف غزال", code:"3748", desc:"رواية تاريخية", img:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8L4Q3Z8KlP7Amf8wrt8i0gJCYrvkV-4_8Og&s"}
 ];
 
+
 function todayDate(){
     const t = new Date();
     return t.toISOString().split("T")[0];
@@ -153,7 +200,14 @@ function displayBooks(list){
 
             <input placeholder="الاسم الثلاثي + الصف">
 
-            <input type="date" min="${todayDate()}" value="${todayDate()}">
+            <!-- ⭐ التعديل الجديد -->
+            <div class="date-box">
+                <div class="date-label">📅 تاريخ الإرجاع</div>
+                <div class="date-input">
+                    <span>📆</span>
+                    <input type="date" min="${todayDate()}" value="${todayDate()}">
+                </div>
+            </div>
 
             <button onclick="reserve(${index})">حجز</button>
             <button onclick="cancel(${index})">إلغاء الحجز</button>
